@@ -12,56 +12,88 @@ let score = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 let lives = 7;
 
-let gunImg = new Image();
-gunImg.src = "./assets/gunimage.png";
-
-let bulletImg = new Image();
-bulletImg.src = "./assets/bulletImage.png";
-
-let monsterImg = new Image();
-monsterImg.src = "./assets/monsterimage.png";
+var gunImg;
+var bulletImg;
+var monsterImg;
 
 var bulletListner;
 var lastMove = 0;
 
+function preloadImages(callback) {
+  let imagesLoaded = 0;
+
+  gunImg = new Image();
+  gunImg.src = "./assets/gunimage.png";
+  gunImg.onload = function() {
+    imagesLoaded++;
+    if (imagesLoaded === 3) {
+      callback();
+    }
+  }
+
+  bulletImg = new Image();
+  bulletImg.src = "./assets/bulletImage.png";
+  bulletImg.onload = function() {
+    imagesLoaded++;
+    if (imagesLoaded === 3) {
+      callback();
+    }
+  }
+
+  monsterImg = new Image();
+  monsterImg.src = "./assets/monsterimage.png";
+  monsterImg.onload = function() {
+    imagesLoaded++;
+    if (imagesLoaded === 3) {
+      callback();
+    }
+  }
+}
+
 function startGame() {
   gameState = "ongoing";
-  document.getElementById("gameCanvas").style.background = "white";
-  document.getElementById("startGameBtn").disabled = true;
-  document.getElementById("currentLives").textContent = `❤️= ${lives}`;
-  document.getElementById("currentScore").textContent = `Score: ${score}`;
+  preloadImages(() => {
+    document.getElementById("gameCanvas").style.background = "white";
+    document.getElementById("startGameBtn").disabled = true;
+    document.getElementById("currentLives").textContent = `❤️= ${lives}`;
+    document.getElementById("currentScore").textContent = `Score: ${score}`;
 
-  monster = new component(monsterImg, generateXPos(), 50, 40, 40, "monster");
-  gun = new component(gunImg, 400, 500, 35, 35, "player");
+    monster = new component(monsterImg, generateXPos(), 50, 40, 40, "monster");
+    gun = new component(gunImg, 400, 500, 35, 35, "player");
 
   
-  bulletListner = document.addEventListener("keydown", function (event) {
-    if(Date.now() - lastMove > 200) {
-      genreateBullet(event);
-      lastMove = Date.now();
-    }
+    bulletListner = document.addEventListener("keydown", function (event) {
+      if(Date.now() - lastMove > 250) {
+        genreateBullet(event);
+        lastMove = Date.now();
+      }
+    });
+
+    updateGameArea();
   });
-    
-  updateGameArea();
+  
 }
 
 document.getElementById("highestScore").textContent = `High Score: ${highScore}`;
 
 document.addEventListener("keydown", function (event) {
   //console.log(event.keyCode);
-  if (event.keyCode == 65 || event.keyCode == 37) {
+  if ((event.keyCode == 65 || event.keyCode == 37) && gun != null) {
     gun.speedX -= gun.speedX < -2 ? 0 : 2;
     //console.log(gun.speedX);
   }
-  if (event.keyCode == 68 || event.keyCode == 39) {
+  if ((event.keyCode == 68 || event.keyCode == 39) && gun != null) {
     gun.speedX += gun.speedX > 2 ? 0 : 2;
     //console.log(gun.speedX);
+  }
+  if (event.keyCode == 32) {
+    event.preventDefault();
   }
 });
 
 document.addEventListener("keyup", function (event) {
   //console.log(event.keyCode);
-  if (event.keyCode == 65 || event.keyCode == 68 || event.keyCode == 37 || event.keyCode == 39) {
+  if ((event.keyCode == 65 || event.keyCode == 68 || event.keyCode == 37 || event.keyCode == 39) && gun != null) {
     gun.speedX = 0;
   }
 });
@@ -117,7 +149,7 @@ function updateGameArea() {
 
   for (let i=0; i<bullets.length; i++) {
     bullets[i].newPos();
-    bullets[i].update();
+    setTimeout(bullets[i].update(),0);
 
     if (monster.crashWith(bullets[i])) {
       // console.log(`Monster -> Left: ${monster.x}, Right: ${monster.x + monster.width}, Top: ${monster.y}, Bottom: ${monster.y + monster.height}`);
@@ -167,7 +199,7 @@ function stopGame() {
   
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  document.removeEventListener("keydown");
+  document.removeEventListener("keydown", bulletListner);
 
 }
 
