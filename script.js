@@ -21,7 +21,8 @@ bulletImg.src = "./assets/bulletImage.png";
 let monsterImg = new Image();
 monsterImg.src = "./assets/monsterimage.png";
 
-let bulletListner;
+var bulletListner;
+var lastMove = 0;
 
 function startGame() {
   gameState = "ongoing";
@@ -33,7 +34,7 @@ function startGame() {
   monster = new component(monsterImg, generateXPos(), 50, 40, 40, "monster");
   gun = new component(gunImg, 400, 500, 35, 35, "player");
 
-  var lastMove = 0;
+  
   bulletListner = document.addEventListener("keydown", function (event) {
     if(Date.now() - lastMove > 200) {
       genreateBullet(event);
@@ -55,9 +56,6 @@ document.addEventListener("keydown", function (event) {
   if (event.keyCode == 68 || event.keyCode == 39) {
     gun.speedX += gun.speedX > 2 ? 0 : 2;
     //console.log(gun.speedX);
-  }
-  if (event.keyCode == 32) { //spacebar
-    event.preventDefault(); // Prevent default (reload)
   }
 });
 
@@ -122,13 +120,11 @@ function updateGameArea() {
     bullets[i].update();
 
     if (monster.crashWith(bullets[i])) {
-      // console.log("collision occured");
       // console.log(`Monster -> Left: ${monster.x}, Right: ${monster.x + monster.width}, Top: ${monster.y}, Bottom: ${monster.y + monster.height}`);
       // console.log(`Bullet -> Left: ${bullets[i].x}, Right: ${bullets[i].x + bullets[i].width}, Top: ${bullets[i].y}, Bottom: ${bullets[i].y + bullets[i].height}`);
       // Handle the bullet-monster collision
       bullets.splice(i, 1); // Remove the bullet from the array
       i--; // Adjust the index after removing the bullet
-      // Move monster to a new random position
       monster.x = generateXPos();
       score++;
       if (score > highScore) {
@@ -167,14 +163,12 @@ function stopGame() {
   score = 0;
   lives = 7;
   bullets = [];
-  console.log(bullets);
+  // console.log(bullets);
   
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   document.removeEventListener("keydown");
-  document.removeEventListener("keydown", bulletListner);
-  
-  //window.location.reload();
+
 }
 
 function generateXPos() {
@@ -183,6 +177,7 @@ function generateXPos() {
 
 function genreateBullet(event) {
   if (event.keyCode == 32) { //spacebar
+    // console.log("bullet created");
     event.preventDefault(); // Prevent default (reload)
     let bullet = new component(bulletImg, gun.x+10, gun.y-20, 6, 20, "bullet");
     bullets.push(bullet);
