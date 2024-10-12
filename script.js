@@ -32,7 +32,7 @@ function preloadImages(callback) {
   }
 
   bulletImg = new Image();
-  bulletImg.src = "./assets/bulletImage.png";
+  bulletImg.src = "./assets/bulletimage.png";
   bulletImg.onload = function() {
     imagesLoaded++;
     if (imagesLoaded === 3) {
